@@ -131,3 +131,5 @@ class TestVTMPBVT0R:
         """Mostrar reporte profesional usando el módulo reutilizable"""
         cls.reporter.generate_console_report()
         cls.reporter.save_summary_file()
+        html_path = cls.reporter.generate_html_report("reporte_mantenimiento_v2.html")
+        print(f"✨ Reporte visual generado en: {html_path}")
