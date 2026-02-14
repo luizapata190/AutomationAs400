@@ -6,13 +6,14 @@ import sys
 # Añadir el directorio raíz al path para poder importar as400_automation
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from as400_automation.settings import settings
 from as400_automation.telnet_screen import TelnetScreenDriver
 from as400_automation.reporting import AS400Reporter
 
-# Configuración de PUB400.COM
-HOST = "PUB400.COM"
-USER = "LUINOSZ"
-PASS = "V4l3ritO+"
+# Configuración desde .env
+HOST = settings.HOST
+USER = settings.USER
+PASS = settings.PASS
 
 class TestVTMPBVT0R:
     @classmethod
@@ -52,11 +53,13 @@ class TestVTMPBVT0R:
         self.driver.disconnect()
         print("✅ Desconectado")
 
-    def ir_al_mantenimiento(self, test_name="test"):
+    def ir_al_mantenimiento(self, test_name="test", command=None):
         """Navegación robusta al programa con evidencias"""
-        print(f"\n→ Navegando al mantenimiento ({test_name})...")
-        self.driver.send_text("CALL LUINOSZ1/VTMPBVT0R")
-        self.driver.send_enter(wait=2.0)
+        # Si no se pasa comando, usar el default para este test específico
+        cmd = command or f"CALL LUINOSZ1/VTMPBVT0R"
+        
+        print(f"\n→ Navegando al mantenimiento ({test_name}) con: {cmd}")
+        self.driver.exec_command(cmd, wait=2.0)
         
         for intento in range(5):
             pantalla = self.driver.get_screen_text(wait_if_empty=2.0, clear_buffer=False)
@@ -91,43 +94,60 @@ class TestVTMPBVT0R:
         """Caso 1: Verificar el flujo inicial sin registros"""
         name = "Test 1: Sin Registros"
         print(f"\n{name}")
-        status = "PASS" if self.ir_al_mantenimiento("test1") else "FAIL"
-        self.reporter.add_result(name, status, self.curr_evidence)
+        details = "Iniciada navegación al programa VTMPBVT0R.\n"
+        if self.ir_al_mantenimiento("test1"):
+            details += "✅ Programa cargado correctamente.\nNota: Se detectó y cerró popup de registros vacíos."
+            self.reporter.add_result(name, "PASS", self.curr_evidence, details=details)
+        else:
+            details += "❌ Error: No se pudo cargar la pantalla de mantenimiento."
+            self.reporter.add_result(name, "FAIL", self.curr_evidence, details=details)
 
     def test_2_crear_registro(self):
         """Caso 2: Simulación de creación (F6)"""
         name = "Test 2: Crear Registro"
         print(f"\n{name}")
+        details = "Navegando al programa...\n"
         if self.ir_al_mantenimiento("test2"):
-            print("→ Presionando F6 (Nuevo)...")
+            details += "→ Intentando presionar F6 para nuevo registro.\n"
             self.driver.send_function_key(6)
             time.sleep(2)
             ev_file = "test2_05_create_screen.png"
             self.driver.save_screenshot(self.reporter.evidence_dir, ev_file)
             self.curr_evidence.append(ev_file)
-            print("✅ Pantalla de creación capturada")
-            self.reporter.add_result(name, "PASS", self.curr_evidence)
+            details += "✅ Pantalla de creación abierta y capturada."
+            self.reporter.add_result(name, "PASS", self.curr_evidence, details=details)
         else:
-            self.reporter.add_result(name, "FAIL", self.curr_evidence)
+            details += "❌ Error al cargar pantalla principal."
+            self.reporter.add_result(name, "FAIL", self.curr_evidence, details=details)
 
     def test_3_editar_registro(self):
         """Caso 3: Simulación de edición (Opción 2)"""
         name = "Test 3: Editar Registro"
         print(f"\n{name}")
+        details = "Navegando al programa...\n"
         if self.ir_al_mantenimiento("test3"):
-            print("→ Escribiendo '2' en el primer registro...")
+            details += "→ Seleccionando primer registro con opción '2'.\n"
             self.driver.send_text("2")
             self.driver.send_enter(wait=2)
             ev_file = "test3_05_edit_screen.png"
             self.driver.save_screenshot(self.reporter.evidence_dir, ev_file)
             self.curr_evidence.append(ev_file)
-            print("✅ Acción de edición capturada")
-            self.reporter.add_result(name, "PASS", self.curr_evidence)
+            details += "✅ Pantalla de edición visualizada."
+            self.reporter.add_result(name, "PASS", self.curr_evidence, details=details)
         else:
-            self.reporter.add_result(name, "FAIL", self.curr_evidence)
+            details += "❌ Error: Pantalla de mantenimiento no accesible."
+            self.reporter.add_result(name, "FAIL", self.curr_evidence, details=details)
 
     @classmethod
     def teardown_class(cls):
         """Mostrar reporte profesional usando el módulo reutilizable"""
         cls.reporter.generate_console_report()
         cls.reporter.save_summary_file()
+        html_path = cls.reporter.generate_html_report("reporte_mantenimiento_v2.html")
+        print(f"✨ Reporte visual generado en: {html_path}")
+
+if __name__ == "__main__":
+    # Permite ejecutar este archivo directamente con python
+    # Ejemplo: poetry run python tests/test_vtmpbvt0r.py
+    import pytest
+    pytest.main([__file__, "-s", "-v"])

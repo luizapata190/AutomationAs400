@@ -4,15 +4,23 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
-# Evidencias de pruebas (Opcional)
-# Se suelen ignorar porque crecen mucho y cambian en cada ejecución.
-# Si quieres que la v1 tenga las fotos "de recuerdo", comenta estas líneas o bóralas:
-# tests/evidence/
-# debug_evidence/
+# Evidencias de pruebas y reportes
+tests/evidence/
+debug_evidence/
+evidence_v2/
+*.png
+*.html
 
-# Librerías de terceros (Opcional, pero recomendado que cada uno instale las suyas)
-# Si quieres incluir los JARs, no ignores la carpeta lib/
-# lib/
+# Distribución y Empaquetado
+dist/
+build/
+*.whl
+*.tar.gz
+
+# Cachés y temporales
+__pycache__/
+.pytest_cache/
+.env
 
 # Entornos virtuales
 venv/

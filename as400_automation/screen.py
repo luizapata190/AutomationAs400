@@ -35,8 +35,8 @@ class ScreenDriver:
             return
 
         if not lib_dir:
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            lib_dir = os.path.join(base_dir, "lib")
+            pkg_dir = os.path.dirname(os.path.abspath(__file__))
+            lib_dir = os.path.join(pkg_dir, "lib")
 
         # Buscar JAR de tn5250j dinámicamente
         tn5250_jar = None
@@ -71,32 +71,17 @@ class ScreenDriver:
         # Intentar detectar jvm.dll si no está en PATH
 
 
-        # Intentar detectar jvm.dll si no está en PATH
-        jvm_path = None
+        # Iniciar JVM con motor centralizado (Portátil)
+        from .jvm_helper import get_jvm_path
+        jvm_path = get_jvm_path()
         try:
-            jvm_path = jpype.getDefaultJVMPath()
-        except:
-            pass
-
-        if not jvm_path or not os.path.exists(jvm_path):
-            # Rutas comunes encontradas en el sistema del usuario
-            common_paths = [
-                r"C:\Program Files\Semeru\jdk-17.0.8.101-openj9\bin\server\jvm.dll",
-                r"C:\Program Files\Semeru\jdk-17.0.8.101-openj9\bin\default\jvm.dll",
-                r"C:\Program Files\Java\jdk-11\bin\server\jvm.dll",
-                r"C:\Program Files\Eclipse Adoptium\jdk-17.0.8.101-hotspot\bin\server\jvm.dll"
-            ]
-            for path in common_paths:
-                if os.path.exists(path):
-                    jvm_path = path
-                    logging.info(f"JVM encontrada en: {jvm_path}")
-                    break
-        
-        if jvm_path and os.path.exists(jvm_path):
-            jpype.startJVM(jvm_path, classpath=classpath)
-        else:
-            # Dejar que JPype intente encontrarla o falle
-            jpype.startJVM(classpath=classpath)
+            if jvm_path:
+                jpype.startJVM(jvm_path, classpath=classpath)
+            else:
+                jpype.startJVM(classpath=classpath)
+        except Exception as e:
+            logging.error(f"Error fatal iniciando JVM en ScreenDriver: {e}")
+            raise
 
     def connect(self, host: str, port: int = 23, code_page: str = "37") -> None:
         """
