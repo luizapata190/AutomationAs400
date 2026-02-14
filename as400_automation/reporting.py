@@ -15,7 +15,7 @@ class AS400Reporter:
         if not os.path.exists(self.evidence_dir):
             os.makedirs(self.evidence_dir, exist_ok=True)
 
-    def add_result(self, test_name: str, status: str, evidence: list = None):
+    def add_result(self, test_name: str, status: str, evidence: list = None, details: str = None):
         """
         Registra el resultado de un caso de prueba.
         
@@ -23,11 +23,13 @@ class AS400Reporter:
             test_name (str): Nombre del caso de prueba.
             status (str): 'PASS' o 'FAIL'.
             evidence (list): Lista de nombres de archivos de imagen generados.
+            details (str): Mensaje de error o log detallado (opcional).
         """
         self.results.append({
             'name': test_name,
             'status': status,
-            'evidence': evidence or []
+            'evidence': evidence or [],
+            'details': details
         })
 
     def get_stats(self):
@@ -170,6 +172,16 @@ class AS400Reporter:
         .status-PASS {{ background: rgba(16, 185, 129, 0.2); color: var(--success); }}
         .status-FAIL {{ background: rgba(239, 68, 68, 0.2); color: var(--fail); }}
         
+        .test-details {{
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid #334155;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+        }}
+        
         .evidence-grid {{
             padding: 1.5rem;
             display: grid;
@@ -231,6 +243,13 @@ class AS400Reporter:
                     <span class="status-badge {status_class}">{res['status']}</span>
                 </div>
             """
+            
+            # Nueva sección de Detalles/Logs
+            if res.get('details'):
+                html_template += f"""
+                <div class="test-details">{res['details']}</div>
+                """
+                
             if res['evidence']:
                 html_template += '<div class="evidence-grid">'
                 for img in res['evidence']:

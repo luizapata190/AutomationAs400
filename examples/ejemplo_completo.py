@@ -18,15 +18,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from as400_automation.commands import AS400CommandDriver
 from as400_automation.database import DatabaseDriver
 from as400_automation.telnet_screen import TelnetScreenDriver
+from as400_automation.settings import settings
 import time
 
-# ========================================
-# CONFIGURACIÓN - CAMBIA ESTOS VALORES
-# ========================================
-AS400_HOST = "PUB400.COM"  # Cambia por tu servidor
-AS400_USER = "LUINOSZ"      # Cambia por tu usuario
-AS400_PASS = "V4l3ritO+"     # Cambia por tu password
-# ========================================
+# Las credenciales ahora se cargan automáticamente desde el archivo .env
+AS400_HOST = settings.HOST
+AS400_USER = settings.USER
+AS400_PASS = settings.PASS
+AS400_CONN = settings.DB_CONN
 
 
 def ejemplo_1_comandos():
@@ -89,8 +88,8 @@ def ejemplo_2_base_datos():
         # Crear driver
         db = DatabaseDriver()
         
-        # String de conexión
-        conn_str = (
+        # String de conexión (Prioriza el del .env si existe)
+        conn_str = AS400_CONN if AS400_CONN else (
             "DRIVER={IBM i Access ODBC Driver};"
             f"SYSTEM={AS400_HOST};"
             f"UID={AS400_USER};"
