@@ -33,14 +33,19 @@ class AS400CommandDriver:
             if not os.path.exists(self.jar_path):
                 raise FileNotFoundError(f"No se encontró jt400.jar en: {self.jar_path}")
             
-            # Detectar JVM de forma dinámica (Recomendado V2)
+            # Usar el motor centralizado de resolución de JVM (Portátil)
+            from .jvm_helper import get_jvm_path
+            jvm_path = get_jvm_path()
+            
             try:
-                jvm_path = jpype.getDefaultJVMPath()
-                jpype.startJVM(jvm_path, classpath=[self.jar_path])
+                if jvm_path:
+                    jpype.startJVM(jvm_path, classpath=[self.jar_path])
+                else:
+                    # Último intento confiando en el PATH del sistema
+                    jpype.startJVM(classpath=[self.jar_path])
             except Exception as e:
-                # Fallback solo si lo automático falla
-                logging.warning(f"No se pudo detectar JVM automática: {e}. Intentando inicio simple...")
-                jpype.startJVM(classpath=[self.jar_path])
+                logging.error(f"Error fatal iniciando JVM: {e}")
+                raise
 
     def connect(self, system: str, user: str, password: str) -> None:
         """
