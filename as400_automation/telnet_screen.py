@@ -134,6 +134,19 @@ class TelnetScreenDriver:
         if not self._connected: raise ConnectionError("No hay conexión activa.")
         self._socket.sendall(text.encode(self._encoding))
 
+    def exec_command(self, command: str, wait: float = 2.0) -> None:
+        """
+        Escribe un comando y presiona Enter.
+        Ideal para CALL e inicios de programas desde la línea de comandos.
+        
+        Args:
+            command (str): El comando CL a ejecutar.
+            wait (float): Tiempo de espera después de enviar.
+        """
+        if not self._connected: raise ConnectionError("No hay conexión activa.")
+        self.send_text(command)
+        self.send_enter(wait=wait)
+
     def wait_for_silence(self, timeout: float = 3.0, silence_threshold: float = 0.3) -> bool:
         """
         Espera dinámicamente a que el socket deje de recibir datos (pantalla estable).

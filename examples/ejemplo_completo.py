@@ -7,7 +7,7 @@ Este script demuestra cómo usar los 3 módulos principales:
 3. Pantallas (Telnet)
 
 INSTRUCCIONES:
-1. Cambia las variables de configuración abajo
+1. Configura tus credenciales en el archivo .env
 2. Ejecuta: python examples/ejemplo_completo.py
 """
 
@@ -21,7 +21,7 @@ from as400_automation.telnet_screen import TelnetScreenDriver
 from as400_automation.settings import settings
 import time
 
-# Las credenciales ahora se cargan automáticamente desde el archivo .env
+# Las credenciales se cargan automáticamente desde el archivo .env
 AS400_HOST = settings.HOST
 AS400_USER = settings.USER
 AS400_PASS = settings.PASS
@@ -180,10 +180,15 @@ def menu_principal():
     print("="*60)
     print(f"\nConfiguración actual:")
     print(f"  Host: {AS400_HOST}")
-    print(f"  Usuario: {AS400_USER}")
-    print(f"  Password: {'*' * len(AS400_PASS)}")
+    print(f"  Usuario: {AS400_USER if AS400_USER else 'NO CONFIGURADO'}")
+    pass_masked = '*' * len(AS400_PASS) if AS400_PASS else 'NO CONFIGURADO'
+    print(f"  Password: {pass_masked}")
     
-    print("\n⚠️ IMPORTANTE: Cambia las credenciales en la línea 23-25 del script")
+    # Validar configuración
+    if not AS400_USER or not AS400_PASS:
+        print("\n❌ ERROR: No se han configurado credenciales en el archivo .env")
+        print("Antes de ejecutar, configura AS400_USER y AS400_PASS en tu archivo .env.")
+        return
     
     print("\nSelecciona el ejemplo a ejecutar:")
     print("  1. Ejecutar Comandos (JT400)")

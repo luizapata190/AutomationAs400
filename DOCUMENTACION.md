@@ -1,4 +1,4 @@
-# Manual Técnico: AS400 Automation Library 🚀 (v2.0.0)
+# Manual Técnico: AS400 Automation Library 🚀 (v2.2.0)
 
 Esta librería profesional de Python automatiza procesos en IBM i (AS400). La **Versión 2.0** introduce una arquitectura de nivel empresarial enfocada en velocidad, seguridad y mantenibilidad.
 

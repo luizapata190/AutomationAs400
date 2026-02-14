@@ -42,6 +42,11 @@ poetry run pytest --html=resultado.html --self-contained-html
 *Crea un archivo HTML profesional con tablas y gráficas de éxito/error.*
 
 ---
+poetry run pytest tests/test_vtmpbvt0r.py -s -v
+-v: Te dice QUÉ test está corriendo (el nombre de la función).
+-s: Te deja ver LO QUE PASA dentro (tus prints y logs de conexión).
+
+---
 
 ## 🎯 ¿Es obligatorio para mi librería?
 **No es obligatorio, pero es lo mejor por 3 razones:**

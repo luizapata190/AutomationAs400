@@ -6,13 +6,14 @@ import sys
 # Añadir el directorio raíz al path para poder importar as400_automation
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from as400_automation.settings import settings
 from as400_automation.telnet_screen import TelnetScreenDriver
 from as400_automation.reporting import AS400Reporter
 
-# Configuración de PUB400.COM
-HOST = "PUB400.COM"
-USER = "LUINOSZ"
-PASS = "V4l3ritO+"
+# Configuración desde .env
+HOST = settings.HOST
+USER = settings.USER
+PASS = settings.PASS
 
 class TestVTMPBVT0R:
     @classmethod
@@ -52,11 +53,13 @@ class TestVTMPBVT0R:
         self.driver.disconnect()
         print("✅ Desconectado")
 
-    def ir_al_mantenimiento(self, test_name="test"):
+    def ir_al_mantenimiento(self, test_name="test", command=None):
         """Navegación robusta al programa con evidencias"""
-        print(f"\n→ Navegando al mantenimiento ({test_name})...")
-        self.driver.send_text("CALL LUINOSZ1/VTMPBVT0R")
-        self.driver.send_enter(wait=2.0)
+        # Si no se pasa comando, usar el default para este test específico
+        cmd = command or f"CALL LUINOSZ1/VTMPBVT0R"
+        
+        print(f"\n→ Navegando al mantenimiento ({test_name}) con: {cmd}")
+        self.driver.exec_command(cmd, wait=2.0)
         
         for intento in range(5):
             pantalla = self.driver.get_screen_text(wait_if_empty=2.0, clear_buffer=False)

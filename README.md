@@ -1,4 +1,4 @@
-# AS400 Automation Library 🚀 (v2.0.0)
+# AS400 Automation Library 🚀 (v2.2.0)
 
 Librería profesional de Python para la automatización de procesos en IBM i (AS400). Combina la potencia de Java (JT400) para llamadas a programas y SQL, con un motor de pantalla Telnet 5250 puro en Python.
 
@@ -39,7 +39,11 @@ client.disconnect()
 ```
 
 ## 📚 Documentación y Ejemplos
-Para guías detalladas sobre patrones avanzados, base de datos y reportes, consulta la [DOCUMENTACION.md](./DOCUMENTACION.md). Encontrarás ejemplos listos para usar en la carpeta `/examples`.
+Para guías detalladas consulta la [DOCUMENTACION.md](./DOCUMENTACION.md). Estructura de ejemplos en `/examples`:
+- `ejemplo_comandos.py`: Ejecución de CL via JT400.
+- `ejemplo_sql.py`: Consultas DB2 via ODBC.
+- `ejemplo_pantallas.py`: Automatización 5250 via Telnet.
+- `ejemplo_completo.py`: Showcase de todas las funciones juntas.
 
 ## ✅ Estado
 
