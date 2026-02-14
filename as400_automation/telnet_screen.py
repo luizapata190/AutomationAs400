@@ -134,25 +134,72 @@ class TelnetScreenDriver:
         if not self._connected: raise ConnectionError("No hay conexión activa.")
         self._socket.sendall(text.encode(self._encoding))
 
-    def send_enter(self, wait: float = 0.5) -> None:
-        """Envía ENTER."""
-        if not self._connected: raise ConnectionError("No hay conexión activa.")
-        self._socket.sendall(b"\r\n")
-        time.sleep(wait)
-        self._read_available(timeout=0.2)
-
-    def send_tab(self, count: int = 1, wait: float = 0.2) -> None:
+    def exec_command(self, command: str, wait: float = 2.0) -> None:
         """
-        Envía una o varias teclas TAB para navegar entre campos.
+        Escribe un comando y presiona Enter.
+        Ideal para CALL e inicios de programas desde la línea de comandos.
         
         Args:
-            count (int): Cantidad de tabuladores a enviar.
+            command (str): El comando CL a ejecutar.
             wait (float): Tiempo de espera después de enviar.
         """
         if not self._connected: raise ConnectionError("No hay conexión activa.")
+        self.send_text(command)
+        self.send_enter(wait=wait)
+
+    def wait_for_silence(self, timeout: float = 3.0, silence_threshold: float = 0.3) -> bool:
+        """
+        Espera dinámicamente a que el socket deje de recibir datos (pantalla estable).
+        
+        Args:
+            timeout (float): Tiempo máximo total de espera.
+            silence_threshold (float): Cuánto tiempo de silencio se considera 'estable'.
+            
+        Returns:
+            bool: True si se alcanzó el silencio, False si hubo timeout.
+        """
+        if not self._connected: return False
+        
+        end_time = time.time() + timeout
+        last_data_time = time.time()
+        
+        while time.time() < end_time:
+            # Intentar leer datos sin bloquear demasiado
+            data = self._read_available(timeout=0.05)
+            if data:
+                last_data_time = time.time()
+            elif (time.time() - last_data_time) > silence_threshold:
+                # Se alcanzó el tiempo de silencio requerido
+                return True
+        return False
+
+    def send_enter(self, wait: float = None) -> None:
+        """
+        Envía ENTER y espera estabilidad.
+        Si se pasa 'wait', se usa ese tiempo fijo (retrocompatibilidad).
+        """
+        if not self._connected: raise ConnectionError("No hay conexión activa.")
+        self._socket.sendall(b"\r\n")
+        
+        if wait:
+            time.sleep(wait)
+            self._read_available(timeout=0.1)
+        else:
+            self.wait_for_silence()
+
+    def send_tab(self, count: int = 1, wait: float = None) -> None:
+        """
+        Envía una o varias teclas TAB.
+        Si se pasa 'wait', se usa ese tiempo fijo.
+        """
+        if not self._connected: raise ConnectionError("No hay conexión activa.")
         self._socket.sendall(b"\t" * count)
-        time.sleep(wait)
-        self._read_available(timeout=0.1)
+        
+        if wait:
+            time.sleep(wait)
+            self._read_available(timeout=0.1)
+        else:
+            self.wait_for_silence(timeout=1.0, silence_threshold=0.1)
 
     def get_screen_text(self, wait_if_empty: float = 0.5, clear_buffer: bool = True) -> str:
         """Retorna el contenido de la pantalla desde el emulador pyte (24x80)."""
@@ -201,22 +248,29 @@ class TelnetScreenDriver:
         return self._renderer.render_to_image(screen_text, path)
 
     def send_function_key(self, key_number: int) -> None:
-        """Envía una tecla de función (F1-F12)."""
+        """
+        Envía una tecla de función (F1-F24).
+        """
         if not self._connected: raise ConnectionError("No hay conexión activa.")
         
+        # Secuencias de escape estándar para terminales funcionales
         escape_sequences = {
             1: b"\x1b[11~", 2: b"\x1b[12~", 3: b"\x1b[13~", 
             4: b"\x1b[14~", 5: b"\x1b[15~", 6: b"\x1b[17~",
             7: b"\x1b[18~", 8: b"\x1b[19~", 9: b"\x1b[20~",
             10: b"\x1b[21~", 11: b"\x1b[23~", 12: b"\x1b[24~",
+            13: b"\x1b[25~", 14: b"\x1b[26~", 15: b"\x1b[28~",
+            16: b"\x1b[29~", 17: b"\x1b[31~", 18: b"\x1b[32~",
+            19: b"\x1b[33~", 20: b"\x1b[34~", 21: b"\x1b[35~",
+            22: b"\x1b[36~", 23: b"\x1b[37~", 24: b"\x1b[38~",
         }
         
         if key_number in escape_sequences:
             self._socket.sendall(escape_sequences[key_number])
-            time.sleep(1.0)
-            self._read_available(timeout=0.5)
+            self.wait_for_silence()
         else:
-            raise ScreenError(f"Tecla F{key_number} no soportada")
+            from .exceptions import ScreenError
+            raise ScreenError(f"Tecla F{key_number} no soportada. Rango válido: 1-24.")
 
     def wait_for_text(self, text: str, timeout: int = 10) -> bool:
         """Espera hasta que aparezca un texto en el emulador."""

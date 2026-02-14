@@ -1,47 +1,49 @@
-# AS400 Automation Library
+# AS400 Automation Library 🚀 (v2.2.0)
 
-Librería profesional de Python para automatizar interacciones con IBM i (AS400).
+Librería profesional de Python para la automatización de procesos en IBM i (AS400). Combina la potencia de Java (JT400) para llamadas a programas y SQL, con un motor de pantalla Telnet 5250 puro en Python.
 
-## 🚀 Instalación Rápida
+## ✨ Características Principales
+- **Todo en uno**: Los drivers Java (JT400) vienen integrados en el paquete.
+- **Ultra-Rápida**: Motor Telnet con esperas dinámicas (sin `time.sleep` innecesarios).
+- **Enterprise Ready**: Soporte para variables de entorno (`.env`) y patrón Page Object.
+- **Teclado Completo**: Soporte desde F1 hasta F24.
 
+## 🛠️ Instalación
+
+### Con Poetry (Recomendado)
 ```bash
-pip install -r requirements.txt
+poetry add as400-automation
 ```
 
-## 📖 Uso Básico
+### Con Pip
+```bash
+pip install as400-automation
+```
 
-### Ejecutar Comandos
+## 🚀 Inicio Rápido
 
 ```python
-from as400_automation.commands import AS400CommandDriver
+from as400_automation.core import AS400Client
 
-driver = AS400CommandDriver()
-driver.connect("MIHOST", "USUARIO", "PASSWORD")
+client = AS400Client()
+client.connect_screen("TU_HOST")
 
-result = driver.run_command("DSPLIBL")
-print(result)
+# Interactuar con la pantalla
+client.screen.send_text("USUARIO")
+client.screen.send_tab()
+client.screen.send_text("PASSWORD")
+client.screen.send_enter()
 
-driver.disconnect()
+print(client.screen.get_screen_text())
+client.disconnect()
 ```
 
-### Consultas SQL
-
-```python
-from as400_automation.database import DatabaseDriver
-
-db = DatabaseDriver()
-db.connect("DRIVER={IBM i Access ODBC Driver};SYSTEM=MIHOST;UID=user;PWD=pass;")
-
-rows = db.execute_query("SELECT * FROM MILIB.MITABLA")
-for row in rows:
-    print(row)
-
-db.disconnect()
-```
-
-## 📚 Documentación
-
-Ver [walkthrough.md](C:\\Users\\lzapataa\\.gemini\\antigravity\\brain\\9b663404-41f2-4358-9b66-0ae3e94a499a\\walkthrough.md) para documentación completa.
+## 📚 Documentación y Ejemplos
+Para guías detalladas consulta la [DOCUMENTACION.md](./DOCUMENTACION.md). Estructura de ejemplos en `/examples`:
+- `ejemplo_comandos.py`: Ejecución de CL via JT400.
+- `ejemplo_sql.py`: Consultas DB2 via ODBC.
+- `ejemplo_pantallas.py`: Automatización 5250 via Telnet.
+- `ejemplo_completo.py`: Showcase de todas las funciones juntas.
 
 ## ✅ Estado
 

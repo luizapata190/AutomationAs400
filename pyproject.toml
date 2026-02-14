@@ -1,0 +1,33 @@
+[project]
+name = "as400-automation"
+version = "2.0.0"
+description = "Librería profesional para automatización de AS400 (Pantalla y Base de Datos)"
+authors = [
+    { name = "Luis Alberto Zapata Arango", email = "LZapataA@leonisa.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "jpype1>=1.5.0",
+    "pyodbc>=5.0.0",
+    "pyte>=0.8.0",
+    "pillow>=10.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.poetry]
+packages = [
+    { include = "as400_automation" }
+]
+include = [
+    "as400_automation/lib/*.jar"
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0.0"
+pytest-html = ">=4.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
