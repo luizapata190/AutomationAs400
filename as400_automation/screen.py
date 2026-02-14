@@ -35,8 +35,8 @@ class ScreenDriver:
             return
 
         if not lib_dir:
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            lib_dir = os.path.join(base_dir, "lib")
+            pkg_dir = os.path.dirname(os.path.abspath(__file__))
+            lib_dir = os.path.join(pkg_dir, "lib")
 
         # Buscar JAR de tn5250j dinámicamente
         tn5250_jar = None

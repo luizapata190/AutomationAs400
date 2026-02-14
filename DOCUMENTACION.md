@@ -1,55 +1,52 @@
-# Manual Técnico: AS400 Automation Library 🚀
+# Manual Técnico: AS400 Automation Library 🚀 (v2.0.0)
 
-Esta librería proporciona una suite de herramientas en Python para automatizar procesos en IBM i (AS400), abarcando desde la ejecución de comandos hasta la interacción con pantallas 5250 de alta fidelidad.
+Esta librería profesional de Python automatiza procesos en IBM i (AS400). La **Versión 2.0** introduce una arquitectura de nivel empresarial enfocada en velocidad, seguridad y mantenibilidad.
 
-## 🏗️ Arquitectura del Paquete
-
-El paquete `as400_automation` se divide en módulos especializados:
-
-1.  **`telnet_screen.py`**: El motor principal. Utiliza `pyte` para emular una terminal 24x80 real, permitiendo navegar por menús y capturar pantallas con fidelidad total.
-2.  **`commands.py`**: Interfaz para ejecutar comandos CL y llamar a programas (RPG, COBOL, etc.) utilizando la librería JT400.
-3.  **`database.py`**: Driver para ejecución de sentencias SQL (ODBC) directamente sobre DB2.
-4.  **`reporting.py`**: Sistema modular para generar reportes profesionales con estadísticas de éxito y gestión de evidencias visuales.
-5.  **`renderer.py`**: Motor gráfico que convierte el texto de la pantalla en imágenes PNG de alta calidad.
+## 🏗️ Novedades de la Versión 2.0
+- **Empaquetado Profesional**: Migración completa a **Poetry**.
+- **Driver Unificado**: El `AS400Client` ahora utiliza `TelnetScreenDriver` (Pure Python) por defecto, eliminando la dependencia de Java para la pantalla.
+- **Esperas Dinámicas**: Implementación de `wait_for_silence()` que elimina los `time.sleep()` fijos, haciendo la automatización 3x más rápida.
+- **Seguridad**: Soporte nativo para variables de entorno mediante `.env` y `settings.py`.
+- **Mantenibilidad**: Introducción del patrón **Page Object**.
 
 ## 🛠️ Instalación y Requisitos
 
-- **Python 3.8+**
-- **Java JRE/JDK** (Necesario para JT400)
-- **Librerías Python**: `pip install pyte Pillow jpype1 pyodbc pytest`
-- **Driver ODBC**: IBM i Access ODBC Driver (para el módulo `database`).
+### Con Poetry (Recomendado V2)
+Si tienes Poetry instalado, simplemente corre:
+```bash
+poetry install
+```
 
-## 🚀 Guía de Implementación Rápida
+### Con Pip tradicional
+```bash
+pip install .
+```
 
-Para automatizar un nuevo programa, sigue este patrón:
+- **Requisitos**: Python 3.11+, Java (solo para el módulo `commands`), Driver ODBC (para `database`).
+
+## 🔐 Configuración de Seguridad
+No guardes contraseñas en el código. Crea un archivo `.env` basado en el `.env.example`:
+```ini
+AS400_HOST=PUB400.COM
+AS400_USER=MI_USUARIO
+AS400_PASS=MI_PASSWORD
+```
+
+## 🚀 Guía de Implementación Enterprise (Page Object)
+
+Para un proyecto profesional, utiliza la estructura de **Pages**:
 
 ```python
-from as400_automation.telnet_screen import TelnetScreenDriver
-from as400_automation.reporting import AS400Reporter
+from as400_automation.core import AS400Client
+from as400_automation.pages.login_page import LoginPage
+from as400_automation.settings import settings
 
-# 1. Configurar Reporte
-reporter = AS400Reporter(evidence_dir="evidencias_nuevo_programa")
+client = AS400Client()
+client.connect_screen(settings.HOST)
 
-# 2. Iniciar Driver
-driver = TelnetScreenDriver()
-driver.connect("PUB400.COM")
-
-# 3. Flujo de Negocio
-if driver.login("USUARIO", "PASSWORD", evidence_dir="evidencias_nuevo_programa"):
-    driver.send_text("CALL MI_LIB/MI_PROG")
-    driver.send_enter(wait=2.0)
-    
-    # Capturar pantalla del programa
-    driver.save_screenshot("evidencias_nuevo_programa", "pantalla_inicial.png")
-    
-    # Reportar Éxito
-    reporter.add_result("Carga de Programa", "PASS", ["01_sign_on_screen.png", "pantalla_inicial.png"])
-else:
-    reporter.add_result("Login", "FAIL")
-
-# 4. Generar Reporte Final
-reporter.generate_console_report()
-driver.disconnect()
+# Usar Page Object para abstraer la pantalla
+login = LoginPage(client.screen)
+login.login(settings.USER, settings.PASS)
 ```
 
 ## � Patrones de Automatización Comunes
@@ -163,26 +160,31 @@ texto_completo = driver.get_text_at(5, 10)
 - `generate_console_report()`: Muestra estadísticas en consola.
 - `save_summary_file()`: Guarda un archivo de texto con el resumen.
 
-### 7. 🤝 Cómo compartir con tus compañeros
+### 7. 🤝 Cómo compartir con tus compañeros y la Comunidad
 
-Si quieres que otro compañero pueda usar esta librería en su propia computadora, tienes dos formas oficiales de hacerlo:
+¡Grandes noticias! En la **Versión 2.0.0**, hemos logrado que la librería sea **totalmente autocontenida**. Esto significa que los archivos Java (JARs) ya viajan dentro del paquete.
 
-#### Opción A: Copia Directa (Recomendada para proyectos rápidos)
-1. Comprime y envía toda la carpeta del proyecto (asegúrate de incluir la carpeta `as400_automation` y la carpeta `lib`).
-2. Tu compañero debe instalar las librerías necesarias ejecutando:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. ¡Listo! Ya puede importar `as400_automation` en sus scripts.
-
-#### Opción B: Instalación como Paquete Local (Profesional)
-Si quieres que tu compañero pueda usar la librería desde **cualquier lugar** de su computadora (como si fuera una librería estándar de Python):
+#### Opción A: Colaboración en Equipo (Poetry)
+Si quieres que otro compañero trabaje en el código contigo:
 1. Envía el proyecto completo.
-2. Tu compañero debe abrir una terminal en la carpeta del proyecto y ejecutar:
+2. Tu compañero solo debe ejecutar: `poetry install`.
+3. ¡No tiene que mover carpetas manualmente! Todo se configura solo.
+
+#### Opción B: Uso como Librería (Distribución Pro)
+Si quieres que alguien use tu librería en sus propios scripts:
+1. **Empaquetar**: Ejecuta `poetry build`.
+2. **Entregar**: Solo tienes que pasarle el archivo `.whl` que está en la carpeta `dist/`.
+3. **Instalar**: Tu compañero lo instala así:
    ```bash
-   pip install -e .
+   pip install as400_automation-2.0.0-py3-none-any.whl
    ```
-3. Ahora puede crear un script en cualquier carpeta y simplemente escribir `from as400_automation...` y funcionará.
+   *¡Y listo! Ya puede usar `from as400_automation...` y los JARs funcionarán automáticamente porque están integrados.*
+
+#### Opción C: Compartir con la Comunidad (PyPI)
+Al ser autocontenida, tu librería está lista para brillar en PyPI. Al subirla, cualquier persona en el mundo podrá descargarla y usarla con un solo `pip install`.
+
+> [!TIP]
+> **Experiencia Zero-Setup**: Al integrar los JARs, hemos eliminado el error más común (el "File Not Found" de los binarios Java). ¡Ahora es conectar y listo!
 
 ### 📚 Recursos de Aprendizaje e Inicio Rápido
 

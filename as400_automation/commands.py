@@ -21,10 +21,10 @@ class AS400CommandDriver:
         self._as400 = None
         self._connected = False
         
-        # Determinar ruta del JAR
+        # Determinar ruta del JAR (Ahora dentro del paquete para empaquetado)
         if not jar_path:
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            self.jar_path = os.path.join(base_dir, "lib", "jt400.jar")
+            pkg_dir = os.path.dirname(os.path.abspath(__file__))
+            self.jar_path = os.path.join(pkg_dir, "lib", "jt400.jar")
         else:
             self.jar_path = jar_path
 
@@ -33,26 +33,13 @@ class AS400CommandDriver:
             if not os.path.exists(self.jar_path):
                 raise FileNotFoundError(f"No se encontró jt400.jar en: {self.jar_path}")
             
-            # Detectar JVM
-            jvm_path = None
+            # Detectar JVM de forma dinámica (Recomendado V2)
             try:
                 jvm_path = jpype.getDefaultJVMPath()
-            except:
-                pass
-
-            if not jvm_path or not os.path.exists(jvm_path):
-                common_paths = [
-                    r"C:\Program Files\Semeru\jdk-17.0.8.101-openj9\bin\server\jvm.dll",
-                    r"C:\Program Files\Semeru\jdk-17.0.8.101-openj9\bin\default\jvm.dll",
-                ]
-                for path in common_paths:
-                    if os.path.exists(path):
-                        jvm_path = path
-                        break
-            
-            if jvm_path and os.path.exists(jvm_path):
                 jpype.startJVM(jvm_path, classpath=[self.jar_path])
-            else:
+            except Exception as e:
+                # Fallback solo si lo automático falla
+                logging.warning(f"No se pudo detectar JVM automática: {e}. Intentando inicio simple...")
                 jpype.startJVM(classpath=[self.jar_path])
 
     def connect(self, system: str, user: str, password: str) -> None:
