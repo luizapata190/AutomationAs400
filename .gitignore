@@ -1,0 +1,24 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Evidencias de pruebas (Opcional)
+# Se suelen ignorar porque crecen mucho y cambian en cada ejecución.
+# Si quieres que la v1 tenga las fotos "de recuerdo", comenta estas líneas o bóralas:
+# tests/evidence/
+# debug_evidence/
+
+# Librerías de terceros (Opcional, pero recomendado que cada uno instale las suyas)
+# Si quieres incluir los JARs, no ignores la carpeta lib/
+# lib/
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
